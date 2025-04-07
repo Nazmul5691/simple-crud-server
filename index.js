@@ -33,12 +33,18 @@ async function run() {
 
         const usersCollection = client.db('newUserDB').collection('users')
 
-       app.get('/users', async(req, res)=>{
-        const cursor = usersCollection.find();
-        const result = await cursor.toArray();
-        res.send(result)
-       })
+        app.get('/users', async (req, res) => {
+            const cursor = usersCollection.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
 
+        app.get('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await usersCollection.findOne(query)
+            res.send(result);
+        })
 
 
         app.post('/users', async (req, res) => {
@@ -49,10 +55,28 @@ async function run() {
         })
 
 
-
-        app.delete('/users/:id', async(req, res) =>{
+        app.put('/users/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id : new ObjectId(id)};
+            const user = req.body;
+            console.log(user);
+
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const updateUser = {
+                $set: {
+                    name: user.name,
+                    email: user.email,
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updateUser, options)
+            res.send(result);
+
+        })
+
+
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
             const result = await usersCollection.deleteOne(query)
             res.send(result)
         })
